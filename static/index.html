@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Livefeed</title>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300' rel='stylesheet' type='text/css'>
+    <style>
+    .color-white {
+      color: #F2F2F0;
+    }
+    .bg-white {
+      /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#ffffff+0,f2f2f0+47,f2f2f0+100 */
+      background: #ffffff; /* Old browsers */
+      background: -moz-linear-gradient(top,  #ffffff 0%, #f2f2f0 47%, #f2f2f0 100%); /* FF3.6-15 */
+      background: -webkit-linear-gradient(top,  #ffffff 0%,#f2f2f0 47%,#f2f2f0 100%); /* Chrome10-25,Safari5.1-6 */
+      background: linear-gradient(to bottom,  #ffffff 0%,#f2f2f0 47%,#f2f2f0 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+      filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#f2f2f0',GradientType=0 ); /* IE6-9 */
+    }
+
+    .color-black {
+      color: #171717;
+    }
+
+    .color-info {
+      color: #96D9AD;
+    }
+
+    .color-primary {
+      color: #F24830;
+    }
+
+    .color-secondary {
+      color: #FFFA74;
+    }
+
+    .bg-secondary {
+      background: #96d9ad; /* Old browsers */
+      background: -moz-linear-gradient(-45deg, #ffffff 1%, #ffffff 25%, #96d9ad 25%, #96d9ad 100%); /* FF3.6-15 */
+      background: -webkit-linear-gradient(-45deg, #ffffff 1%,#ffffff 25%,#96d9ad 25%,#96d9ad 100%); /* Chrome10-25,Safari5.1-6 */
+      background: linear-gradient(135deg, #ffffff 1%,#ffffff 25%,#96d9ad 25%,#96d9ad 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+
+      background-attachment: fixed;
+      background-size: cover;
+      background-repeat: no-repeat;
+    }
+
+    #weather {
+      position: relative;
+
+      min-width: 240px;
+      margin: 0 auto;
+    }
+    #weather:after {
+      position: absolute;
+      z-index: -1;
+      display: block;
+
+      background-color: rgba(0, 0, 0, 0.3);
+      content: "";
+      width: 200%;
+      height: 100%;
+      left: 0;
+      top: 0;
+      transform: translateX(7.5%) translateY(-35%) rotateZ(45deg);
+      transform-origin: center left;
+      border-top-left-radius: 120px;
+      border-bottom-left-radius: 120px;
+    }
+
+    body {
+      margin: 0;
+
+      font-family: 'Open Sans', sans-serif;
+      font-size: 16px;
+    }
+
+    h1 {
+      font-size: 2em;
+    }
+
+    h1 small {
+      -webkit-transform: rotate3d(0, 1, 1, -10deg) perspective(600px);
+      transform: rotate3d(0, 1, 1, -10deg) perspective(600px);
+      float: right;
+      font-size: 0.8em;
+      font-family: serif;
+      text-transform: uppercase;
+      color: white;
+    }
+
+    .container {
+      margin: 0 auto;
+      padding: 15px;
+
+      max-width: 320px;
+      width: 100%;
+    }
+
+    .container, .container * {
+      box-sizing: border-box;
+    }
+
+    @media screen and (min-width: 640px) {
+      .container {
+        max-width: 600px;
+      }
+    }
+
+    .is-day {
+
+    }
+
+    .is-night {
+
+    }
+
+    .panel {
+      width: 240px;
+      height: 240px;
+
+      border: 2px solid white;
+      border-radius: 120px;
+
+      font-size: 1.3em;
+    }
+    @media screen and (min-width: 640px) {
+      .panel {
+        width: 320px;
+        height: 320px;
+
+        border-radius: 160px;
+        font-size: 2em;
+      }
+    }
+
+    .data-item {
+      text-align: center;
+    }
+
+    .data-item .icon {
+      width: 4em;
+    }
+
+    .x1_5 {
+      font-size: 1.5em;
+      font-weight: 600;
+    }
+
+    .x2 {
+      font-size: 2em;
+    }
+
+    .x3 {
+      font-size: 3em;
+    }
+    </style>
+  </head>
+  <body class="bg-secondary">
+    <div class="container">
+      <h1 class="color-primary">Singapore Weather <small>live!</small></h1>
+      <div id="weather" class="panel bg-white">
+        <div class="data-item">
+          <img id="weather-icon" class="icon">
+        </div>
+        <div id="weather-description" class="data-item"></div>
+        <div id="weather-temp" class="data-item x1_5"></div>
+        <div id="weather-wind" class="data-item"></div>
+      </div>
+    </div>
+
+    <script type="text/javascript">
+      var source = new EventSource('/events');
+      var div = document.getElementById("weather");
+      var imgWeatherIcon = document.getElementById("weather-icon");
+      var divWeatherDesc = document.getElementById("weather-description");
+      var divWeatherWind = document.getElementById("weather-wind");
+      var divWeatherTemp = document.getElementById("weather-temp");
+
+      source.onmessage = function(message) {
+        var data = JSON.parse(message.data);
+        console.debug(data);
+
+        var weatherIconSrc = 'http://openweathermap.org/img/w/' + data.weather.icon + '.png';
+        imgWeatherIcon.src = weatherIconSrc;
+
+        divWeatherDesc.innerHTML = data.weather.description;
+        divWeatherTemp.innerHTML = Number(data.main.temp - 273.15).toFixed(2) + '&deg;C';
+        divWeatherWind.innerHTML = data.wind.deg + '&deg; @' + data.wind.speed + 'kph'
+
+      };
+    </script>
+  </body>
+</html>
