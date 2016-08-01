@@ -1,5 +1,5 @@
 import signal
-from os import path
+from os import path, environ
 from concurrent.futures import ThreadPoolExecutor
 
 from time import time, sleep
@@ -117,15 +117,18 @@ if __name__ == '__main__':
     base_dir = path.join(path.dirname(__file__), '..')
     static_dir = path.join(base_dir, 'static')
 
+    port = environ.get('PORT', '8888')
+    env = environ.get('ENV', 'DEV')
     app = LiveFeedApp(
         [
             (r'/events', EventSource),
             (r'/(.*)', web.StaticFileHandler, {"path": static_dir, "default_filename": "index.html"})
         ],
-        debug=True
+        debug=env is 'DEV'
     )
-    app.listen(8888)
 
+    app.listen(int(port))
+    print('Application is listening at port {}'.format(port))
     def safe_shutdown():
         print('Server has been shutdown. Bye!')
 
